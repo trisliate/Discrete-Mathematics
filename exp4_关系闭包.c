@@ -1,18 +1,19 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define MAX_ELEMENTS 50
 #define MAX_PAIRS 100
 
 typedef struct {
-    int setA[MAX_ELEMENTS];
+    char setA[MAX_ELEMENTS];
     int sizeA;
     int relationMatrix[MAX_ELEMENTS][MAX_ELEMENTS];
-    int pairs[MAX_PAIRS][2];
+    char pairs[MAX_PAIRS][2];
     int numPairs;
 } RelationA;
 
-int findIndex(int set[], int size, int element) {
+int findIndex(char set[], int size, char element) {
     int i;
     for (i = 0; i < size; i++) {
         if (set[i] == element) {
@@ -26,9 +27,9 @@ void inputSet(RelationA *rel) {
     int i;
     printf("输入集合A的元素个数: ");
     scanf("%d", &rel->sizeA);
-    printf("依次输入集合A的各元素: ");
+    printf("依次输入集合A的各元素 (空格分隔，可以是数字或字母): ");
     for (i = 0; i < rel->sizeA; i++) {
-        scanf("%d", &rel->setA[i]);
+        scanf(" %c", &rel->setA[i]);
     }
 }
 
@@ -42,23 +43,42 @@ void initMatrix(RelationA *rel) {
 }
 
 void inputRelation(RelationA *rel) {
-    int i, a, b;
+    int i;
+    char a, b;
+    char line[100];
     int idxA, idxB;
     int validPairs = 0;
+    int result;
     
     printf("\n输入关系R中序偶的个数: ");
     scanf("%d", &rel->numPairs);
+    getchar();  // 清除换行符
     
-    printf("输入关系的序偶 (格式: a b):\n");
+    printf("输入关系的序偶 (格式: a b，两个元素用空格分隔):\n");
     for (i = 0; i < rel->numPairs; i++) {
         printf("第%d个序偶: ", i + 1);
-        scanf("%d %d", &a, &b);
+        
+        // 使用 fgets 读取一整行，避免缓冲区问题
+        if (fgets(line, sizeof(line), stdin) == NULL) {
+            printf("  [错误] 输入失败\n");
+            i--;
+            continue;
+        }
+        
+        // 用 sscanf 解析一整行
+        result = sscanf(line, "%c %c", &a, &b);
+        
+        if (result != 2) {
+            printf("  [错误] 输入格式不正确，请输入两个元素（如: a b）\n");
+            i--;
+            continue;
+        }
         
         idxA = findIndex(rel->setA, rel->sizeA, a);
         idxB = findIndex(rel->setA, rel->sizeA, b);
         
         if (idxA == -1 || idxB == -1) {
-            printf("  [错误] (%d, %d) 不符合定义\n", a, b);
+            printf("  [错误] (%c, %c) 不在集合A中\n", a, b);
             i--;
             continue;
         }
@@ -70,20 +90,19 @@ void inputRelation(RelationA *rel) {
     }
     rel->numPairs = validPairs;
 }
-
 void outputRelationMatrix(RelationA *rel, const char *label) {
     int i, j;
     printf("\n【%s】\n", label);
-    printf("      ");
+    printf("     ");
     for (j = 0; j < rel->sizeA; j++) {
-        printf("%5d", rel->setA[j]);
+        printf("%6d", rel->setA[j]);
     }
     printf("\n");
     
     for (i = 0; i < rel->sizeA; i++) {
-        printf("%5d", rel->setA[i]);
+        printf("%3d ", rel->setA[i]);
         for (j = 0; j < rel->sizeA; j++) {
-            printf("%5d", rel->relationMatrix[i][j]);
+            printf("%6d", rel->relationMatrix[i][j]);
         }
         printf("\n");
     }
@@ -114,16 +133,16 @@ void symmetricClosure(RelationA *rel, int closure[][MAX_ELEMENTS]) {
 void outputClosure(RelationA *rel, int closure[][MAX_ELEMENTS], const char *type) {
     int i, j;
     printf("\n【%s闭包的关系矩阵】\n", type);
-    printf("      ");
+    printf("     ");
     for (j = 0; j < rel->sizeA; j++) {
-        printf("%5d", rel->setA[j]);
+        printf("%6d", rel->setA[j]);
     }
     printf("\n");
     
     for (i = 0; i < rel->sizeA; i++) {
-        printf("%5d", rel->setA[i]);
+        printf("%3d ", rel->setA[i]);
         for (j = 0; j < rel->sizeA; j++) {
-            printf("%5d", closure[i][j]);
+            printf("%6d", closure[i][j]);
         }
         printf("\n");
     }
@@ -135,13 +154,17 @@ int main() {
     printf("========================================\n\n");
     
     RelationA rel;
+    int reflexiveClosureMatrix[MAX_ELEMENTS][MAX_ELEMENTS];
+    int symmetricClosureMatrix[MAX_ELEMENTS][MAX_ELEMENTS];
+    
+    memset(&rel, 0, sizeof(RelationA));
+    memset(reflexiveClosureMatrix, 0, sizeof(reflexiveClosureMatrix));
+    memset(symmetricClosureMatrix, 0, sizeof(symmetricClosureMatrix));
+    
     inputSet(&rel);
     initMatrix(&rel);
     inputRelation(&rel);
     outputRelationMatrix(&rel, "原关系R的矩阵");
-    
-    int reflexiveClosureMatrix[MAX_ELEMENTS][MAX_ELEMENTS];
-    int symmetricClosureMatrix[MAX_ELEMENTS][MAX_ELEMENTS];
     
     reflexiveClosure(&rel, reflexiveClosureMatrix);
     symmetricClosure(&rel, symmetricClosureMatrix);

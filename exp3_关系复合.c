@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define MAX_ELEMENTS 50
 #define MAX_PAIRS 100
@@ -7,12 +8,12 @@
 typedef struct {
     int matrix[MAX_ELEMENTS][MAX_ELEMENTS];
     int sizeA, sizeB, sizeC;
-    int setA[MAX_ELEMENTS];
-    int setB[MAX_ELEMENTS];
-    int setC[MAX_ELEMENTS];
+    char setA[MAX_ELEMENTS];
+    char setB[MAX_ELEMENTS];
+    char setC[MAX_ELEMENTS];
 } CompositeRelation;
 
-int findIndex(int set[], int size, int element) {
+int findIndex(char set[], int size, char element) {
     int i;
     for (i = 0; i < size; i++) {
         if (set[i] == element) {
@@ -23,19 +24,19 @@ int findIndex(int set[], int size, int element) {
 }
 
 void outputMatrix(int matrix[][MAX_ELEMENTS], int rows, int cols, 
-                  int rowSet[], int colSet[], const char *name) {
+                  char rowSet[], char colSet[], const char *name) {
     int i, j;
     printf("\n【%s的关系矩阵】\n", name);
-    printf("      ");
+    printf("    ");
     for (j = 0; j < cols; j++) {
-        printf("%5d", colSet[j]);
+        printf("%6c", colSet[j]);
     }
     printf("\n");
     
     for (i = 0; i < rows; i++) {
-        printf("%5d", rowSet[i]);
+        printf("%3c ", rowSet[i]);
         for (j = 0; j < cols; j++) {
-            printf("%5d", matrix[i][j]);
+            printf("%6d", matrix[i][j]);
         }
         printf("\n");
     }
@@ -63,8 +64,10 @@ int main() {
     int R[MAX_ELEMENTS][MAX_ELEMENTS];
     int S[MAX_ELEMENTS][MAX_ELEMENTS];
     int result[MAX_ELEMENTS][MAX_ELEMENTS];
-    int i, j, numR, numS, a, b, c, idxA, idxB, idxC;
+    int i, j, numR, numS, idxA, idxB, idxC;
+    char a, b, c;
     
+    memset(&comp, 0, sizeof(CompositeRelation));
     memset(R, 0, sizeof(R));
     memset(S, 0, sizeof(S));
     memset(result, 0, sizeof(result));
@@ -76,16 +79,16 @@ int main() {
     printf("输入关系R的信息:\n");
     printf("集合A元素个数: ");
     scanf("%d", &comp.sizeA);
-    printf("输入集合A的元素: ");
+    printf("输入集合A的元素 (空格分隔，可以是数字或字母): ");
     for (i = 0; i < comp.sizeA; i++) {
-        scanf("%d", &comp.setA[i]);
+        scanf(" %c", &comp.setA[i]);
     }
     
     printf("集合B元素个数: ");
     scanf("%d", &comp.sizeB);
-    printf("输入集合B的元素: ");
+    printf("输入集合B的元素 (空格分隔，可以是数字或字母): ");
     for (i = 0; i < comp.sizeB; i++) {
-        scanf("%d", &comp.setB[i]);
+        scanf(" %c", &comp.setB[i]);
     }
     
     printf("关系R的序偶个数: ");
@@ -93,7 +96,7 @@ int main() {
     printf("输入R的序偶 (格式: a b):\n");
     for (i = 0; i < numR; i++) {
         printf("第%d个: ", i + 1);
-        scanf("%d %d", &a, &b);
+        scanf(" %c %c", &a, &b);
         idxA = findIndex(comp.setA, comp.sizeA, a);
         idxB = findIndex(comp.setB, comp.sizeB, b);
         if (idxA != -1 && idxB != -1) {
@@ -104,9 +107,9 @@ int main() {
     printf("\n输入关系S的信息:\n");
     printf("集合C元素个数: ");
     scanf("%d", &comp.sizeC);
-    printf("输入集合C的元素: ");
+    printf("输入集合C的元素 (空格分隔，可以是数字或字母): ");
     for (i = 0; i < comp.sizeC; i++) {
-        scanf("%d", &comp.setC[i]);
+        scanf(" %c", &comp.setC[i]);
     }
     
     printf("关系S的序偶个数: ");
@@ -114,7 +117,7 @@ int main() {
     printf("输入S的序偶 (格式: b c):\n");
     for (i = 0; i < numS; i++) {
         printf("第%d个: ", i + 1);
-        scanf("%d %d", &b, &c);
+        scanf(" %c %c", &b, &c);
         idxB = findIndex(comp.setB, comp.sizeB, b);
         idxC = findIndex(comp.setC, comp.sizeC, c);
         if (idxB != -1 && idxC != -1) {

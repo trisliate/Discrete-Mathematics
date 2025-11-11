@@ -44,38 +44,54 @@
         }
     }
 
-    void inputRelation(Relation *rel) {
-        int i;
-        char a, b;
-        int idxA, idxB;
-        int validPairs = 0;
+void inputRelation(Relation *rel) {
+    int i;
+    char a, b;
+    char line[100];
+    int idxA, idxB;
+    int validPairs = 0;
+    int result;
+    
+    printf("\n输入关系R中序偶的个数: ");
+    scanf("%d", &rel->numPairs);
+    getchar();  // 清除换行符
+    
+    printf("输入关系的序偶 (格式: a b，两个元素用空格分隔):\n");
+    for (i = 0; i < rel->numPairs; i++) {
+        printf("第%d个序偶: ", i + 1);
         
-        printf("\n输入关系R中序偶的个数: ");
-        scanf("%d", &rel->numPairs);
-        
-        printf("输入关系的序偶 (格式: a b):\n");
-        for (i = 0; i < rel->numPairs; i++) {
-            printf("第%d个序偶: ", i + 1);
-            scanf(" %c %c", &a, &b);
-            
-            idxA = findIndex(rel->setA, rel->sizeA, a);
-            idxB = findIndex(rel->setB, rel->sizeB, b);
-            
-            if (idxA == -1 || idxB == -1) {
-                printf("  [错误] (%c, %c) 不符合定义\n", a, b);
-                i--;
-                continue;
-            }
-            
-            rel->pairs[validPairs][0] = a;
-            rel->pairs[validPairs][1] = b;
-            rel->relationMatrix[idxA][idxB] = 1;
-            validPairs++;
+        // 使用 fgets 读取一整行，避免缓冲区问题
+        if (fgets(line, sizeof(line), stdin) == NULL) {
+            printf("  [错误] 输入失败\n");
+            i--;
+            continue;
         }
-        rel->numPairs = validPairs;
+        
+        // 用 sscanf 解析一整行
+        result = sscanf(line, "%c %c", &a, &b);
+        
+        if (result != 2) {
+            printf("  [错误] 输入格式不正确，请输入两个元素（如: a b）\n");
+            i--;
+            continue;
+        }
+        
+        idxA = findIndex(rel->setA, rel->sizeA, a);
+        idxB = findIndex(rel->setB, rel->sizeB, b);
+        
+        if (idxA == -1 || idxB == -1) {
+            printf("  [错误] (%c, %c) 不在相应集合中\n", a, b);
+            i--;
+            continue;
+        }
+        
+        rel->pairs[validPairs][0] = a;
+        rel->pairs[validPairs][1] = b;
+        rel->relationMatrix[idxA][idxB] = 1;
+        validPairs++;
     }
-
-    void outputRelationSet(Relation *rel) {
+    rel->numPairs = validPairs;
+}    void outputRelationSet(Relation *rel) {
         int i;
         printf("\n========================================\n");
         printf("【关系R的集合表达式】\n");

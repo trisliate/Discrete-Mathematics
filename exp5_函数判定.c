@@ -1,20 +1,21 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define MAX_ELEMENTS 50
 #define MAX_PAIRS 100
 
 typedef struct {
-    int setA[MAX_ELEMENTS];
+    char setA[MAX_ELEMENTS];
     int sizeA;
-    int setB[MAX_ELEMENTS];
+    char setB[MAX_ELEMENTS];
     int sizeB;
     int relationMatrix[MAX_ELEMENTS][MAX_ELEMENTS];
-    int pairs[MAX_PAIRS][2];
+    char pairs[MAX_PAIRS][2];
     int numPairs;
 } Function;
 
-int findIndex(int set[], int size, int element) {
+int findIndex(char set[], int size, char element) {
     int i;
     for (i = 0; i < size; i++) {
         if (set[i] == element) {
@@ -24,13 +25,13 @@ int findIndex(int set[], int size, int element) {
     return -1;
 }
 
-void inputSet(int set[], int *size, const char *name) {
+void inputSet(char set[], int *size, const char *name) {
     int i;
     printf("输入集合%s的元素个数: ", name);
     scanf("%d", size);
-    printf("依次输入集合%s的各元素: ", name);
+    printf("依次输入集合%s的各元素 (空格分隔，可以是数字或字母): ", name);
     for (i = 0; i < *size; i++) {
-        scanf("%d", &set[i]);
+        scanf(" %c", &set[i]);
     }
 }
 
@@ -44,23 +45,42 @@ void initMatrix(Function *func) {
 }
 
 void inputFunction(Function *func) {
-    int i, a, b;
+    int i;
+    char a, b;
+    char line[100];
     int idxA, idxB;
     int validPairs = 0;
+    int result;
     
     printf("\n输入关系f中序偶的个数: ");
     scanf("%d", &func->numPairs);
+    getchar();  // 清除换行符
     
-    printf("输入关系的序偶 (格式: a b):\n");
+    printf("输入关系的序偶 (格式: a b，两个元素用空格分隔):\n");
     for (i = 0; i < func->numPairs; i++) {
         printf("第%d个序偶: ", i + 1);
-        scanf("%d %d", &a, &b);
+        
+        // 使用 fgets 读取一整行，避免缓冲区问题
+        if (fgets(line, sizeof(line), stdin) == NULL) {
+            printf("  [错误] 输入失败\n");
+            i--;
+            continue;
+        }
+        
+        // 用 sscanf 解析一整行
+        result = sscanf(line, "%c %c", &a, &b);
+        
+        if (result != 2) {
+            printf("  [错误] 输入格式不正确，请输入两个元素（如: a b）\n");
+            i--;
+            continue;
+        }
         
         idxA = findIndex(func->setA, func->sizeA, a);
         idxB = findIndex(func->setB, func->sizeB, b);
         
         if (idxA == -1 || idxB == -1) {
-            printf("  [错误] (%d, %d) 不符合定义\n", a, b);
+            printf("  [错误] (%c, %c) 不在相应集合中\n", a, b);
             i--;
             continue;
         }
@@ -78,7 +98,7 @@ void outputFunctionSet(Function *func) {
     printf("\n【关系f的集合表达式】\n");
     printf("f = {");
     for (i = 0; i < func->numPairs; i++) {
-        printf("<%d,%d>", func->pairs[i][0], func->pairs[i][1]);
+        printf("<%c,%c>", func->pairs[i][0], func->pairs[i][1]);
         if (i < func->numPairs - 1) printf(", ");
     }
     printf("}\n");
@@ -87,16 +107,16 @@ void outputFunctionSet(Function *func) {
 void outputFunctionMatrix(Function *func) {
     int i, j;
     printf("\n【关系矩阵 M(f)】\n");
-    printf("      ");
+    printf("    ");
     for (j = 0; j < func->sizeB; j++) {
-        printf("%5d", func->setB[j]);
+        printf("%6c", func->setB[j]);
     }
     printf("\n");
     
     for (i = 0; i < func->sizeA; i++) {
-        printf("%5d", func->setA[i]);
+        printf("%3c ", func->setA[i]);
         for (j = 0; j < func->sizeB; j++) {
-            printf("%5d", func->relationMatrix[i][j]);
+            printf("%6d", func->relationMatrix[i][j]);
         }
         printf("\n");
     }
@@ -190,6 +210,7 @@ int main() {
     printf("========================================\n\n");
     
     Function func;
+    memset(&func, 0, sizeof(Function));
     inputSet(func.setA, &func.sizeA, "A");
     inputSet(func.setB, &func.sizeB, "B");
     initMatrix(&func);
